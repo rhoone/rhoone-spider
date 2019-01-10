@@ -80,7 +80,7 @@ class BatchDownloadJob extends BaseObject implements JobInterface
         $result = $template;
         foreach ($parameters as $key => $parameter)
         {
-            $result = str_replace($key, $result, $parameter);
+            $result = str_replace($key, $parameter, $result);
         }
         return $result;
     }
@@ -126,16 +126,16 @@ class BatchDownloadJob extends BaseObject implements JobInterface
     }
 
     /**
-     * @param $filename
-     * @param bool $use_include_path
-     * @param null $context
-     * @param int $offset
-     * @param null $maxlen
+     * Download according to the specified URL.
+     * @param $url
      * @return false|string
      */
-    protected function download($filename, $use_include_path = false, $context = null, $offset = 0, $maxlen = null)
+    protected function download($url)
     {
-        return file_get_contents($filename, $use_include_path = false, $context = null, $offset = 0, $maxlen = null);
+        file_put_contents("php://stdout", "filename: $url\n");
+        $result = file_get_contents($url);
+        file_put_contents("php://stdout", "result[len: " . strlen($result) ."]\n");
+        return $result;
     }
 
     /**
