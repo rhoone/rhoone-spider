@@ -12,6 +12,8 @@
 
 namespace rhoone\spider\job;
 
+use rhoone\spider\destinations\Destination;
+use Yii;
 use yii\base\BaseObject;
 use yii\queue\JobInterface;
 use yii\queue\Queue;
@@ -58,7 +60,26 @@ class BatchDownloadJob extends BaseObject implements JobInterface
     /**
      * @var array
      */
-    public $results = [];
+    protected $results = [];
+
+    /**
+     * The destination where the content is saved.
+     * If you don't want to save, please set it to null.
+     * @var null|array|Destination
+     */
+    public $destination = null;
+
+    /**
+     * Initialize the Job.
+     */
+    public function init()
+    {
+        parent::init();
+        if ($this->destination !== null && is_array($this->destination))
+        {
+            $this->destination = Yii::createObject($this->destination);
+        }
+    }
 
     /**
      * Replace the name in the template with the appropriate value.
@@ -75,7 +96,7 @@ class BatchDownloadJob extends BaseObject implements JobInterface
      * E.g: "{$title}"
      * @return string Replacement result.
      */
-    protected function replace($template, $parameters)
+    protected function replace(string $template, array $parameters)
     {
         $result = $template;
         foreach ($parameters as $key => $parameter)
@@ -106,7 +127,7 @@ class BatchDownloadJob extends BaseObject implements JobInterface
      * Set URLs.
      * @param $urls
      */
-    public function setUrls($urls)
+    public function setUrls(array $urls)
     {
         $this->_urls = $urls;
     }
@@ -130,7 +151,7 @@ class BatchDownloadJob extends BaseObject implements JobInterface
      * @param $url
      * @return false|string
      */
-    protected function download($url)
+    protected function download(string $url)
     {
         file_put_contents("php://stdout", "filename: $url\n");
         $result = file_get_contents($url);
