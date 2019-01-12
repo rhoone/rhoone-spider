@@ -25,9 +25,9 @@ use yii\queue\Queue;
  * How to send a task into the queue:
  * ```php
  * Yii::$app->queue->push(new BatchDownloadJob([
- *     'urlTemplate' => 'https://blog.vistart.me/{$alias}/',
+ *     'urlTemplate' => 'https://blog.vistart.me/{%alias}/',
  *     'urlParameters' => [
- *         [ '{$alias}' => 'why-bitcoin-cannot-become-a-currency' ],
+ *         [ '{%alias}' => 'why-bitcoin-cannot-become-a-currency' ],
  *     ],
  * ]));
  * ```
