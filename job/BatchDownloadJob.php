@@ -15,6 +15,7 @@ namespace rhoone\spider\job;
 use rhoone\spider\destinations\Destination;
 use Yii;
 use yii\base\BaseObject;
+use yii\di\Instance;
 use yii\queue\JobInterface;
 use yii\queue\Queue;
 
@@ -58,7 +59,11 @@ class BatchDownloadJob extends BaseObject implements JobInterface
     public $urlParameters = [];
 
     /**
-     * @var array
+     * @var array downloaded contents.
+     * It is best to specify an explicit key for each array element, as the key will be used to uniquely identify the
+     * downloaded content.
+     * By default, the key of the result array element is the same as the key of the corresponding element of the URL
+     * array. Therefore, you only need to guarantee the uniqueness of the key of the URL array element.
      */
     protected $results = [];
 
@@ -75,12 +80,8 @@ class BatchDownloadJob extends BaseObject implements JobInterface
     public function init()
     {
         parent::init();
-        if ($this->destination !== null && is_array($this->destination))
-        {
-            $this->destination = Yii::createObject($this->destination);
-        }
+        $this->destination = Instance::ensure($this->destination, Destination::class);
     }
-
     /**
      * Replace the name in the template with the appropriate value.
      *
@@ -148,8 +149,8 @@ class BatchDownloadJob extends BaseObject implements JobInterface
 
     /**
      * Download according to the specified URL.
-     * @param $url
-     * @return false|string
+     * @param $url The URL of the page to be downloaded.
+     * @return false|string downloaded content.
      */
     protected function download(string $url)
     {
@@ -160,7 +161,9 @@ class BatchDownloadJob extends BaseObject implements JobInterface
     }
 
     /**
+     * Execute the download process.
      * @param Queue $queue
+     * @return int
      */
     public function execute($queue)
     {
