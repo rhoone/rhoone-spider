@@ -12,6 +12,7 @@
 
 namespace rhoone\spider\destinations\mongodb;
 
+use yii\di\Instance;
 use yii\mongodb\Connection;
 
 /**
@@ -23,7 +24,21 @@ class Destination extends \rhoone\spider\destinations\Destination
     /**
      * @var string|array|Connection
      */
-    public $mongo;
+    public $db = 'mongodb';
+
+    /**
+     * @var string
+     */
+    public $destinationCollection = '';
+
+    /**
+     * @throws \yii\base\InvalidConfigException
+     */
+    public function init()
+    {
+        parent::init();
+        $this->db = Instance::ensure($this->db, Connection::class);
+    }
 
     /**
      * Export content to specified mongodb.
