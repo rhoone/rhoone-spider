@@ -21,15 +21,21 @@ use rhoone\spider\destinations\file\Destination;
 class BatchDownloadToFileJob extends BatchDownloadJob
 {
     /**
-     * @var array|Destination
+     * @var array|Destination The destination where the downloaded content will be saved.
      */
     public $destination;
 
     /**
-     * @var string
+     * @var string File name template.
      */
     public $filenameTemplate = '{%key}.html';
 
+    /**
+     * Execute the download process.
+     * @param \yii\queue\Queue $queue
+     * @return int
+     * @throws \yii\base\InvalidConfigException
+     */
     public function execute($queue)
     {
         parent::execute($queue);
