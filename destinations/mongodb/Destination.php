@@ -12,6 +12,9 @@
 
 namespace rhoone\spider\destinations\mongodb;
 
+use rhoone\spider\destinations\IDestinationModel;
+use rhosocial\base\models\models\BaseMongoEntityModel;
+use rhosocial\base\models\queries\BaseEntityQuery;
 use yii\di\Instance;
 use yii\mongodb\Connection;
 
@@ -27,9 +30,24 @@ class Destination extends \rhoone\spider\destinations\Destination
     public $db = 'mongodb';
 
     /**
+     * @var string the class of destination model implemented the `setDownloadedContent()` method.
+     */
+    public $modelClass;
+
+    /**
+     * @var IDestinationModel
+     */
+    public $model;
+
+    /**
      * @var string
      */
-    public $destinationCollection = '';
+    public $key;
+
+    /**
+     * @var string
+     */
+    public $keyAttribute = 'key';
 
     /**
      * @throws \yii\base\InvalidConfigException
@@ -38,6 +56,31 @@ class Destination extends \rhoone\spider\destinations\Destination
     {
         parent::init();
         $this->db = Instance::ensure($this->db, Connection::class);
+        $this->prepareDestinationModel();
+    }
+
+    /**
+     *
+     */
+    protected function prepareDestinationModel()
+    {
+        $this->model = $this->findOrCreateOne($this->modelClass, $this->keyAttribute, $this->key);
+    }
+
+    /**
+     * @param string $class
+     * @param string $keyAttribute
+     * @param mixed $key
+     * @return IDestinationModel
+     */
+    protected function findOrCreateOne(string $class, string $keyAttribute, $key)
+    {
+        $model = $class::find()->where([$keyAttribute => $key])->one();
+        /* @var $model IDestinationModel */
+        if (!$model) {
+            $model = new $class([$keyAttribute => $key]);
+        }
+        return $model;
     }
 
     /**
@@ -47,6 +90,7 @@ class Destination extends \rhoone\spider\destinations\Destination
      */
     public function export(string $content)
     {
-        // TODO: Implement export() method.
+        $this->model->setDownloadedContent($content);
+        return $this->model->save();
     }
 }
