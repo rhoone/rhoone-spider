@@ -21,21 +21,38 @@ use yii\base\InvalidConfigException;
 class Destination extends \rhoone\spider\destinations\Destination
 {
     /**
-     * @var string
+     * @var string The path where the download file is stored.
+     * The end of the attribute should not contain a directory separator.
      */
     public $path = null;
 
     /**
+     * @var string The file name where the downloaded content is saved.
+     */
+    public $filename = null;
+
+    /**
      * @var string
      */
-    public $filename;
-    
+    public $filenameTemplate = null;
+
+    /**
+     * {@inheritdoc}
+     */
     public function init()
     {
         parent::init();
         if ($this->path === null)
         {
             $this->path = dirname(__FILE__);
+        }
+        if ($this->filenameTemplate === null)
+        {
+            $this->filenameTemplate = "{%$this->keyAttribute}.html";
+        }
+        if ($this->filename === null)
+        {
+            $this->filename = str_replace("{%$this->keyAttribute}", $this->key, $this->filenameTemplate);
         }
     }
 
