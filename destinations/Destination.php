@@ -21,6 +21,16 @@ use yii\base\BaseObject;
 abstract class Destination extends BaseObject
 {
     /**
+     * @var string
+     */
+    public $key;
+
+    /**
+     * @var string
+     */
+    public $keyAttribute;
+
+    /**
      * Export content to specified destination.
      * @param string $content the content to be exported.
      * @return mixed result.
