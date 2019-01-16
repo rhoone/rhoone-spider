@@ -9,6 +9,7 @@
  * @copyright Copyright (c) 2016 vistart
  * @license https://vistart.name/license/
  */
+
 namespace rhoone\spider\job;
 
 use rhoone\spider\destinations\Destination;
@@ -18,19 +19,24 @@ use yii\queue\RetryableJobInterface;
 
 /**
  * Class DownloadJob
- * @property string|null $url
- * @property null|string|array|Destination $destination
+ * This class is used to describe the single download process and is the base class for all other download jobs.
+ * This class introduces a retryable mechanism. By default, you can retry up to 5 times and wait 3 seconds before each
+ * retry. If you don't want to use the retryable mechanism, you can set `getTTR()` to return only `0`, and `canRetry()` to
+ * return only `false`.
+ * @property string|null $url Get or set url to be downloaded.
+ * @property null|string|array|Destination $destination Get or set the destination where the downloaded content is
+ * exported.
  * @package rhoone\spider\job
  */
 class DownloadJob extends BaseObject implements RetryableJobInterface
 {
     /**
-     * @var int
+     * @var int the attempts limit. not recommended to be greater than 5.
      */
     public $attemptsLimit = 5;
 
     /**
-     * @var string
+     * @var string the downloaded content.
      */
     protected $downloadedContent;
 
@@ -43,7 +49,7 @@ class DownloadJob extends BaseObject implements RetryableJobInterface
     private $_destination = null;
 
     /**
-     * @var null|string|Destination
+     * @var null|string the name of destination class. If null, type check will not be performed.
      */
     public $destinationClass;
 
@@ -64,12 +70,12 @@ class DownloadJob extends BaseObject implements RetryableJobInterface
     public $urlParameters = [];
 
     /**
-     * @var string The key for the downloaded content.
+     * @var string the key for the downloaded content.
      */
     public $key;
 
     /**
-     * @var string
+     * @var string the name of the attribute that refers to the key.
      */
     public $keyAttribute = 'key';
 
@@ -134,7 +140,10 @@ class DownloadJob extends BaseObject implements RetryableJobInterface
     }
 
     /**
-     * @param $destination
+     * Set destination instance.
+     * Resolves the specified reference into the actual destination model and makes sure it is of the specified
+     * destination type.
+     * @param null|string|array|Destination $destination
      */
     public function setDestination($destination)
     {
@@ -142,7 +151,8 @@ class DownloadJob extends BaseObject implements RetryableJobInterface
     }
 
     /**
-     * @return string|null
+     * Get destination instance.
+     * @return Destination
      */
     public function getDestination()
     {
@@ -152,10 +162,6 @@ class DownloadJob extends BaseObject implements RetryableJobInterface
     /**
      * Download according to the specified URL.
      * @param string $url The URL of the page to be downloaded.
-     * @param bool $use_include_path
-     * @param null $context
-     * @param int $offset
-     * @param null $maxlen
      * @return false|string downloaded content.
      */
     protected function download(string $url)
@@ -167,6 +173,7 @@ class DownloadJob extends BaseObject implements RetryableJobInterface
     }
 
     /**
+     * Execute the download process.
      * @param \yii\queue\Queue $queue
      * @return int
      */
@@ -177,6 +184,7 @@ class DownloadJob extends BaseObject implements RetryableJobInterface
     }
 
     /**
+     * Get TTR.
      * @return int
      */
     public function getTtr()
@@ -185,6 +193,7 @@ class DownloadJob extends BaseObject implements RetryableJobInterface
     }
 
     /**
+     * Determine if it could retry.
      * @param int $attempt
      * @param \Exception|\Throwable $error
      * @return bool|void
