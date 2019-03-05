@@ -168,7 +168,7 @@ class DownloadJob extends BaseObject implements RetryableJobInterface
     {
         file_put_contents("php://stdout", "filename: $url\n");
         $downloadedContent = file_get_contents($url);
-        file_put_contents("php://stdout", "result[len: " . strlen($result) ."]\n");
+        file_put_contents("php://stdout", "result[len: " . strlen($downloadedContent) ."]\n");
         return $downloadedContent;
     }
 
