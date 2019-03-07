@@ -21,7 +21,9 @@ use rhoone\spider\destinations\mongodb\Destination;
 class BatchDownloadToMongoDBJob extends BatchDownloadJob
 {
     /**
-     * @var null|string
+     * The destination where the content is saved.
+     * If you don't want to save, please set it to null.
+     * @var null|array|Destination
      */
     public $destinationClass = Destination::class;
 
