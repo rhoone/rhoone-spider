@@ -15,6 +15,7 @@ namespace rhoone\spider\destinations\mongodb;
 use rhoone\spider\destinations\IDestinationModel;
 use rhosocial\base\models\models\BaseMongoEntityModel;
 use rhosocial\base\models\queries\BaseEntityQuery;
+use yii\base\InvalidArgumentException;
 use yii\di\Instance;
 use yii\mongodb\Connection;
 
@@ -60,7 +61,7 @@ class Destination extends \rhoone\spider\destinations\Destination
     }
 
     /**
-     *
+     * Prepare Destination Model.
      */
     protected function prepareDestinationModel()
     {
@@ -73,8 +74,11 @@ class Destination extends \rhoone\spider\destinations\Destination
      * @param mixed $key
      * @return IDestinationModel
      */
-    protected function findOrCreateOne(string $class, string $keyAttribute, $key)
+    protected function findOrCreateOne(string $class, string $keyAttribute, $key) : IDestinationModel
     {
+        if ($key == NULL) {
+            throw new InvalidArgumentException("Scalar value required, null given.");
+        }
         $model = $class::find()->where([$keyAttribute => $key])->one();
         /* @var $model IDestinationModel */
         if (!$model) {

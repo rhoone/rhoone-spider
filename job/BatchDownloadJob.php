@@ -15,9 +15,11 @@ namespace rhoone\spider\job;
 use rhoone\spider\destinations\Destination;
 use Yii;
 use yii\base\BaseObject;
+use yii\base\InvalidConfigException;
+use yii\base\InvalidValueException;
 use yii\di\Instance;
-use yii\queue\JobInterface;
 use yii\queue\Queue;
+use yii\queue\RetryableJobInterface;
 
 /**
  * Batch Download Job, which contains a batch of tasks to download.
@@ -29,6 +31,7 @@ use yii\queue\Queue;
  *     'urlTemplate' => 'https://blog.vistart.me/{%alias}/',
  *     'urlParameters' => [
  *         [ '{%alias}' => 'why-bitcoin-cannot-become-a-currency' ],
+ *         ...
  *     ],
  * ]));
  * ```
@@ -38,10 +41,18 @@ use yii\queue\Queue;
  * if there are too few tasks in a batch job, competing for job will consume a lot of resources.
  *
  * @property array|null $urls URLs to be downloaded.
+ * @property-read int $urlsCount Get the count of urls in this batch.
+ * @property null|string|array|Destination $destination Get or set the destination where the downloaded content is
+ * exported.
  * @package rhoone\spider\job
  */
-class BatchDownloadJob extends BaseObject implements JobInterface
+class BatchDownloadJob extends BaseObject implements RetryableJobInterface
 {
+    /**
+     * @var int the attempts limit. not recommended to be greater than 5.
+     */
+    public $attemptsLimit = 5;
+
     /**
      * @var null|array URLs to be downloaded.
      */
@@ -68,20 +79,45 @@ class BatchDownloadJob extends BaseObject implements JobInterface
     protected $results = [];
 
     /**
+     * @var string the name of the attribute that refers to the key.
+     */
+    public $keyAttribute;
+
+    /**
+     * The destination where the content is saved.
+     * The value of this property can be either the Destination model or an array describing the model.
+     * If you don't want to save, please set it to null.
+     * @var null|string
+     */
+    private $_destination = null;
+
+    /**
      * The destination where the content is saved.
      * If you don't want to save, please set it to null.
      * @var null|array|Destination
      */
-    public $destination = null;
+    public $destinationClass = null;
 
     /**
-     * Initialize the Job.
+     * Set destination instance.
+     * Resolves the specified reference into the actual destination model and makes sure it is of the specified
+     * destination type.
+     * @param null|string|array|Destination $destination
      */
-    public function init()
+    public function setDestination($destination)
     {
-        parent::init();
-        $this->destination = Instance::ensure($this->destination, Destination::class);
+        $this->_destination = Instance::ensure($destination, $this->destinationClass);
     }
+
+    /**
+     * Get destination instance.
+     * @return Destination
+     */
+    public function getDestination()
+    {
+        return $this->_destination;
+    }
+
     /**
      * Replace the name in the template with the appropriate value.
      *
@@ -134,6 +170,15 @@ class BatchDownloadJob extends BaseObject implements JobInterface
     }
 
     /**
+     * Get the number of the URLs.
+     * @return int
+     */
+    public function getUrlsCount() : int
+    {
+        return count($this->urls);
+    }
+
+    /**
      * Get URLs.
      * If the URL template is null, return the property `url` array directly, otherwise call generateUrls().
      *
@@ -158,8 +203,30 @@ class BatchDownloadJob extends BaseObject implements JobInterface
     {
         file_put_contents("php://stdout", "filename: $url\n");
         $result = file_get_contents($url);
+        if ($result === false)
+        {
+            throw new InvalidValueException("An error occured while downloading the page.");
+        }
         file_put_contents("php://stdout", "result[len: " . strlen($result) ."]\n");
         return $result;
+    }
+
+    /**
+     * @return int
+     */
+    protected function batchDownload() : int
+    {
+        foreach ($this->urls as $key => $url)
+        {
+            try {
+                $this->results[$key] = $this->download($url);
+            } catch (InvalidValueException $ex)
+            {
+                // Record the current error in the log.
+                file_put_contents("php://stdout", $ex->getMessage() ."]\n");
+            }
+        }
+        return 0;
     }
 
     /**
@@ -167,16 +234,31 @@ class BatchDownloadJob extends BaseObject implements JobInterface
      * @param Queue $queue
      * @return int
      */
-    public function execute($queue)
+    public function execute($queue) : int
     {
         if (!is_array($this->results))
         {
             $this->results = [];
         }
-        foreach ($this->urls as $key => $url)
-        {
-            $this->results[$key] = $this->download($url);
-        }
+        $this->batchDownload();
         return 0;
+    }
+
+    /**
+     * @return int time to reserve in seconds
+     */
+    public function getTtr()
+    {
+        return $this->getUrlsCount() < 3 ? 3 : $this->getUrlsCount();
+    }
+
+    /**
+     * @param int $attempt number
+     * @param \Exception|\Throwable $error from last execute of the job
+     * @return bool
+     */
+    public function canRetry($attempt, $error)
+    {
+        return ($attempt < $this->attemptsLimit && $error instanceof \Exception);
     }
 }

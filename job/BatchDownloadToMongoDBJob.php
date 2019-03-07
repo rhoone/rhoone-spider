@@ -15,39 +15,75 @@ namespace rhoone\spider\job;
 use rhoone\spider\destinations\mongodb\Destination;
 
 /**
- * Class BatchDownloadToMongoDBJob
+ * Batch Download Job, which contains a batch of tasks to download.
+ *
+ * Basic Usage:
+ * How to send a task into the queue:
+ * ```php
+ * Yii::$app->queue->push(new BatchDownloadJob([
+ *     'urlTemplate' => 'https://blog.vistart.me/{%alias}/',
+ *     'urlParameters' => [
+ *         [ '{%alias}' => 'why-bitcoin-cannot-become-a-currency' ],
+ *         ...
+ *     ],
+ * ]));
+ * ```
+ *
+ * It is best not to exceed 1,000 or not less than 10 for each batch of job.
+ * If there are too many tasks in a batch job, they will degenerate into serial tasks;
+ * if there are too few tasks in a batch job, competing for job will consume a lot of resources.
+ *
+ * @property array|null $urls URLs to be downloaded.
  * @package rhoone\spider\job
  */
 class BatchDownloadToMongoDBJob extends BatchDownloadJob
 {
     /**
-     * The destination where the content is saved.
-     * If you don't want to save, please set it to null.
-     * @var null|array|Destination
+     * @var null|string
      */
     public $destinationClass = Destination::class;
 
     /**
-     * @var null|string
+     * @var string
      */
-    public $modelClass = null;
+    public $modelClass;
+
+    /**
+     * @param string $keyAttribute
+     * @param $key
+     * @param $modelClass
+     * @param $result
+     * @return int
+     */
+    protected function export(string $keyAttribute, $key, $modelClass, $result) : int
+    {
+        $this->destination = [
+            'keyAttribute' => $keyAttribute,
+            'key' => $key,
+            'modelClass' => $modelClass,
+        ];
+        return $this->destination->export($result);
+    }
+
+    /**
+     * @return int
+     */
+    protected function batchExport() : int
+    {
+        foreach ($this->results as $key => $result)
+        {
+            $this->export($this->keyAttribute, $key, $this->modelClass, $result);
+        }
+        return 0;
+    }
 
     /**
      * @param \yii\queue\Queue $queue
      * @return int|void
      */
-    public function execute($queue)
+    public function execute($queue) : int
     {
         parent::execute($queue);
-
-        foreach ($this->urls as $key => $url)
-        {
-            $this->destination = [
-                'keyAttribute' => $this->keyAttribute,
-                'key' => $this->key,
-                'modelClass' => $this->modelClass,
-            ];
-            $this->destination->export($this->results[$key]);
-        }
+        return $this->batchExport();
     }
 }
