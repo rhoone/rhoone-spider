@@ -33,7 +33,6 @@ use rhoone\spider\destinations\mongodb\Destination;
  * If there are too many tasks in a batch job, they will degenerate into serial tasks;
  * if there are too few tasks in a batch job, competing for job will consume a lot of resources.
  *
- * @property array|null $urls URLs to be downloaded.
  * @package rhoone\spider\job
  */
 class BatchDownloadToMongoDBJob extends BatchDownloadJob
