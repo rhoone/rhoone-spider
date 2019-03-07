@@ -135,6 +135,8 @@ class BatchDownloadJob extends BaseObject implements JobInterface
 
     /**
      * Get URLs.
+     * If the URL template is null, return the property `url` array directly, otherwise call generateUrls().
+     *
      * @return array|null URLs to be downloaded.
      * If `urlTemplate` set to be null, property `urls` returned.
      */
