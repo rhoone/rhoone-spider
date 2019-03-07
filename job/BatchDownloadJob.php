@@ -207,7 +207,7 @@ class BatchDownloadJob extends BaseObject implements RetryableJobInterface
         {
             throw new InvalidValueException("An error occured while downloading the page.");
         }
-        file_put_contents("php://stdout", "result[len: " . strlen($result) ."]\n");
+        file_put_contents("php://stdout", "  result[len: " . strlen($result) ."]\n");
         return $result;
     }
 
@@ -216,16 +216,26 @@ class BatchDownloadJob extends BaseObject implements RetryableJobInterface
      */
     protected function batchDownload() : int
     {
+        list($usec, $sec) = explode(" ", microtime());
+        $start = ((float)$usec + (float)$sec);
+
+        $total = 0;
         foreach ($this->urls as $key => $url)
         {
             try {
                 $this->results[$key] = $this->download($url);
-            } catch (InvalidValueException $ex)
-            {
+            } catch (InvalidValueException $ex) {
                 // Record the current error in the log.
                 file_put_contents("php://stdout", $ex->getMessage() ."]\n");
+                continue;
             }
+            $total++;
         }
+
+        list($usec, $sec) = explode(" ", microtime());
+        $duration = ((float)$usec + (float)$sec) - $start;
+
+        file_put_contents("php://stdout", "result[$total task(s) finished. $duration second(s) elapsed.]\n\n");
         return 0;
     }
 
