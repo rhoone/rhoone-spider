@@ -76,6 +76,9 @@ class Destination extends \rhoone\spider\destinations\Destination
      */
     protected function findOrCreateOne(string $class, string $keyAttribute, $key) : IDestinationModel
     {
+        if ($keyAttribute == NULL) {
+            throw new InvalidArgumentException("Key attribute not specified.");
+        }
         if ($key == NULL) {
             throw new InvalidArgumentException("Scalar value required, null given.");
         }

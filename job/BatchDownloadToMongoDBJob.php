@@ -69,20 +69,24 @@ class BatchDownloadToMongoDBJob extends BatchDownloadJob
      */
     protected function batchExport() : int
     {
+        $total = 0;
         foreach ($this->results as $key => $result)
         {
-            $this->export($this->keyAttribute, $key, $this->modelClass, $result);
+            $r = $this->export($this->keyAttribute, $key, $this->modelClass, $result);
+            if ($r) {
+                $total++;
+            }
         }
+        file_put_contents("php://stdout", "result[$total saved.]\n\n");
         return 0;
     }
 
     /**
      * @param \yii\queue\Queue $queue
-     * @return int|void
      */
-    public function execute($queue) : int
+    public function execute($queue)
     {
         parent::execute($queue);
-        return $this->batchExport();
+        $this->batchExport();
     }
 }

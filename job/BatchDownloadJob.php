@@ -226,7 +226,7 @@ class BatchDownloadJob extends BaseObject implements RetryableJobInterface
                 $this->results[$key] = $this->download($url);
             } catch (InvalidValueException $ex) {
                 // Record the current error in the log.
-                file_put_contents("php://stdout", $ex->getMessage() ."]\n");
+                file_put_contents("php://stderr", $ex->getMessage() ."]\n");
                 continue;
             }
             $total++;
@@ -242,16 +242,15 @@ class BatchDownloadJob extends BaseObject implements RetryableJobInterface
     /**
      * Execute the download process.
      * @param Queue $queue
-     * @return int
      */
-    public function execute($queue) : int
+    public function execute($queue)
     {
         if (!is_array($this->results))
         {
             $this->results = [];
         }
         $this->batchDownload();
-        return 0;
+        //return 0;
     }
 
     /**

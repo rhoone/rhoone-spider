@@ -33,7 +33,6 @@ class BatchDownloadToFileJob extends BatchDownloadJob
     /**
      * Execute the download process.
      * @param \yii\queue\Queue $queue
-     * @return int
      * @throws \yii\base\InvalidConfigException
      */
     public function execute($queue)
@@ -44,6 +43,6 @@ class BatchDownloadToFileJob extends BatchDownloadJob
             $this->destination->filename = $this->replace($this->filenameTemplate, ['{%key}' => $key]);
             $this->destination->export($result);
         }
-        return 0;
+        //return 0;
     }
 }
