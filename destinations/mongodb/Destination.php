@@ -21,6 +21,7 @@ use yii\mongodb\Connection;
 
 /**
  * Class Destination
+ * @property IDestinationModel $model
  * @package rhoone\spider\destinations\mongodb
  */
 class Destination extends \rhoone\spider\destinations\Destination
@@ -38,7 +39,7 @@ class Destination extends \rhoone\spider\destinations\Destination
     /**
      * @var IDestinationModel
      */
-    public $model;
+    private $_model;
 
     /**
      * @var string
@@ -57,15 +58,26 @@ class Destination extends \rhoone\spider\destinations\Destination
     {
         parent::init();
         $this->db = Instance::ensure($this->db, Connection::class);
-        $this->prepareDestinationModel();
+        $this->model;
     }
 
     /**
-     * Prepare Destination Model.
+     * @return IDestinationModel
      */
-    protected function prepareDestinationModel()
+    public function getModel() : IDestinationModel
     {
-        $this->model = $this->findOrCreateOne($this->modelClass, $this->keyAttribute, $this->key);
+        if ($this->_model == null) {
+            $this->_model = $this->findOrCreateOne($this->modelClass, $this->keyAttribute, $this->key);
+        }
+        return $this->_model;
+    }
+
+    /**
+     * @param $model IDestinationModel
+     */
+    public function setModel($model)
+    {
+        $this->_model = $model;
     }
 
     /**
