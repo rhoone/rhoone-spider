@@ -57,9 +57,9 @@ class BatchDownloadToMongoDBJob extends BatchDownloadJob
     protected function export(string $keyAttribute, $key, $modelClass, $result) : int
     {
         $this->destination = [
-            'keyAttribute' => $keyAttribute,
-            'key' => $key,
-            'modelClass' => $modelClass,
+            'downloadedContentKeyAttribute' => $keyAttribute,
+            'downloadedContentKey' => $key,
+            'downloadedContentClass' => $modelClass,
         ];
         return $this->destination->export($result);
     }
@@ -72,7 +72,11 @@ class BatchDownloadToMongoDBJob extends BatchDownloadJob
         $total = 0;
         foreach ($this->results as $key => $result)
         {
-            $r = $this->export($this->keyAttribute, $key, $this->modelClass, $result);
+            try {
+                $r = $this->export($this->keyAttribute, $key, $this->modelClass, $result);
+            } catch (\Exception $ex) {
+                file_put_contents("php://stderr", $ex->getMessage() . "\n");
+            }
             if ($r) {
                 $total++;
             }
@@ -84,9 +88,10 @@ class BatchDownloadToMongoDBJob extends BatchDownloadJob
     /**
      * @param \yii\queue\Queue $queue
      */
-    public function execute($queue)
+    public function execute($queue) : int
     {
         parent::execute($queue);
         $this->batchExport();
+        return 0;
     }
 }
