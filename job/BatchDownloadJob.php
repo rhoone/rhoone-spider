@@ -106,7 +106,11 @@ class BatchDownloadJob extends BaseObject implements RetryableJobInterface
      */
     public function setDestination($destination)
     {
-        $this->_destination = Instance::ensure($destination, $this->destinationClass);
+        try {
+            $this->_destination = Instance::ensure($destination, $this->destinationClass);
+        } catch (\Exception $ex) {
+            file_put_contents("php://stderr", $ex->getMessage() . "\n");
+        }
     }
 
     /**
@@ -243,20 +247,20 @@ class BatchDownloadJob extends BaseObject implements RetryableJobInterface
      * Execute the download process.
      * @param Queue $queue
      */
-    public function execute($queue)
+    public function execute($queue) : int
     {
         if (!is_array($this->results))
         {
             $this->results = [];
         }
         $this->batchDownload();
-        //return 0;
+        return 0;
     }
 
     /**
      * @return int time to reserve in seconds
      */
-    public function getTtr()
+    public function getTtr() : int
     {
         return $this->getUrlsCount() < 3 ? 3 : $this->getUrlsCount();
     }
@@ -266,7 +270,7 @@ class BatchDownloadJob extends BaseObject implements RetryableJobInterface
      * @param \Exception|\Throwable $error from last execute of the job
      * @return bool
      */
-    public function canRetry($attempt, $error)
+    public function canRetry($attempt, $error) : bool
     {
         return ($attempt < $this->attemptsLimit && $error instanceof \Exception);
     }
