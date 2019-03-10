@@ -42,11 +42,7 @@ trait DestinationTrait
      */
     public function setDestination($destination)
     {
-        try {
-            $this->_destination = Instance::ensure($destination, $this->destinationClass);
-        } catch (\Exception $ex) {
-            file_put_contents("php://stderr", $ex->getMessage() . "\n");
-        }
+        $this->_destination = $destination;
     }
 
     /**
@@ -55,6 +51,11 @@ trait DestinationTrait
      */
     public function getDestination()
     {
+        try {
+            $this->_destination = Instance::ensure($this->_destination, $this->destinationClass);
+        } catch (\Exception $ex) {
+            file_put_contents("php://stderr", $ex->getMessage() . "\n");
+        }
         return $this->_destination;
     }
 }
