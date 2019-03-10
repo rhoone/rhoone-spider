@@ -45,7 +45,7 @@ class BatchDownloadToMongoDBJob extends BatchDownloadJob
     /**
      * @var string
      */
-    public $modelClass;
+    public $downloadedContentClass;
 
     /**
      * @param string $keyAttribute
@@ -73,7 +73,7 @@ class BatchDownloadToMongoDBJob extends BatchDownloadJob
         foreach ($this->results as $key => $result)
         {
             try {
-                $r = $this->export($this->keyAttribute, $key, $this->modelClass, $result);
+                $r = $this->export($this->keyAttribute, $key, $this->downloadedContentClass, $result);
             } catch (\Exception $ex) {
                 file_put_contents("php://stderr", $ex->getMessage() . "\n");
             }
