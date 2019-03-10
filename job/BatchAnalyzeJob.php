@@ -29,12 +29,44 @@ class BatchAnalyzeJob extends BaseObject implements RetryableJobInterface
     public $attemptsLimit = 5;
 
     /**
+     * @var array
+     * $htmls['<key>'] = '<html>';
+     */
+    public $htmls;
+
+    /**
+     * @var array
+     */
+    public $results;
+
+    /**
+     * @param string $html
+     */
+    public function analyze(string $html)
+    {
+        throw new NotSupportedException("This method has not been implemented yet. Please implement your analysis method.");
+    }
+
+    /**
+     * @return int
+     */
+    public function batchAnalyze() : int
+    {
+        $this->results = [];
+        foreach ($this->htmls as $key => $html)
+        {
+            $this->results[$key] = $this->analyze($html);
+        }
+        return 0;
+    }
+
+    /**
      * @param \yii\queue\Queue $queue
      * @return int
      */
     public function execute($queue) : int
     {
-        // TODO: Implement execute() method.
+        $this->batchAnalyze();
         return 0;
     }
 
@@ -43,7 +75,7 @@ class BatchAnalyzeJob extends BaseObject implements RetryableJobInterface
      */
     public function getTtr() : int
     {
-        return $this->getUrlsCount() < 3 ? 3 : $this->getUrlsCount();
+        return $this->htmls < 3 ? 3 : count($this->htmls);
     }
 
     /**
