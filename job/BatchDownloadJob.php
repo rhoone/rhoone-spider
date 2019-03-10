@@ -30,7 +30,7 @@ use yii\queue\RetryableJobInterface;
  * Yii::$app->queue->push(new BatchDownloadJob([
  *     'urlTemplate' => 'https://blog.vistart.me/{%alias}/',
  *     'urlParameters' => [
- *         [ '{%alias}' => 'why-bitcoin-cannot-become-a-currency' ],
+ *         '<key>' => [ '{%alias}' => 'why-bitcoin-cannot-become-a-currency' ],
  *         ...
  *     ],
  * ]));
@@ -66,6 +66,10 @@ class BatchDownloadJob extends BaseObject implements RetryableJobInterface
 
     /**
      * @var array Parameters used to replace the template.
+     * The first dimension of the array is the key of the download task.
+     * The second dimension of the array is the list of parameters for the download task, and the array value is
+     * the value of the parameter.
+     * E.g. $urlParameters['0000000001']['{%marc_no}'] = ['0000000001'];
      */
     public $urlParameters = [];
 
@@ -216,6 +220,7 @@ class BatchDownloadJob extends BaseObject implements RetryableJobInterface
     }
 
     /**
+     * Batch download.
      * @return int
      */
     protected function batchDownload() : int
