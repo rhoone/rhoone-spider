@@ -13,10 +13,10 @@
 namespace rhoone\spider\destinations;
 
 /**
- * Interface IDestinationModel
+ * Interface IDownloadedContent
  * @package rhoone\spider\destinations\mongodb
  */
-interface IDestinationModel
+interface IDownloadedContent
 {
     /**
      * @param string $content the downloaded content to be saved.
