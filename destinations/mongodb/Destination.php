@@ -12,7 +12,7 @@
 
 namespace rhoone\spider\destinations\mongodb;
 
-use rhoone\spider\destinations\IDestinationModel;
+use rhoone\spider\destinations\IDownloadedContent;
 use rhosocial\base\models\models\BaseMongoEntityModel;
 use rhosocial\base\models\queries\BaseEntityQuery;
 use yii\base\InvalidArgumentException;
@@ -21,7 +21,7 @@ use yii\mongodb\Connection;
 
 /**
  * Class Destination
- * @property IDestinationModel $model
+ * @property IDownloadedContent $downloadedContent
  * @package rhoone\spider\destinations\mongodb
  */
 class Destination extends \rhoone\spider\destinations\Destination
@@ -32,24 +32,84 @@ class Destination extends \rhoone\spider\destinations\Destination
     public $db = 'mongodb';
 
     /**
-     * @var string the class of destination model implemented the `setDownloadedContent()` method.
+     * @var string
      */
-    public $modelClass;
+    public $downloadedContentClass;
 
     /**
-     * @var IDestinationModel
+     * @var
      */
-    private $_model;
+    private $_downloadedContent;
+
+    /**
+     * @var
+     */
+    public $downloadedContentKey;
 
     /**
      * @var string
      */
-    public $key;
+    public $downloadedContentKeyAttribute = 'key';
 
     /**
      * @var string
      */
-    public $keyAttribute = 'key';
+    public $marcNoClass;
+
+    /**
+     * @var
+     */
+    private $_marcNo;
+
+    /**
+     * @var
+     */
+    public $marcNoKey;
+
+    /**
+     * @var string
+     */
+    public $marcNoKeyAttribute = 'key';
+
+    /**
+     * @var string
+     */
+    public $marcInfoClass;
+
+    /**
+     * @var
+     */
+    private $_marcInfo;
+
+    /**
+     * @var
+     */
+    public $marcInfoKey;
+
+    /**
+     * @var string
+     */
+    public $marcInfoKeyAttribute = 'key';
+
+    /**
+     * @var string
+     */
+    public $marcCopyClass;
+
+    /**
+     * @var
+     */
+    private $_marcCopy;
+
+    /**
+     * @var
+     */
+    public $marcCopyKey;
+
+    /**
+     * @var string
+     */
+    public $marcCopyKeyAttribute = 'key';
 
     /**
      * @throws \yii\base\InvalidConfigException
@@ -58,35 +118,66 @@ class Destination extends \rhoone\spider\destinations\Destination
     {
         parent::init();
         $this->db = Instance::ensure($this->db, Connection::class);
-        $this->model;
     }
 
     /**
-     * @return IDestinationModel
+     * @param string $name
+     * @return mixed|IDownloadedContent
+     * @throws \yii\base\UnknownPropertyException
      */
-    public function getModel() : IDestinationModel
+    public function __get($name)
     {
-        if ($this->_model == null) {
-            $this->_model = $this->findOrCreateOne($this->modelClass, $this->keyAttribute, $this->key);
+        if (in_array(strtolower($name), ['downloadedcontent', 'marcno', 'marcinfo', 'marccopy'])) {
+            $keyAttribute = $name . 'KeyAttribute';
+            $key = $name . 'Key';
+            $model = $this->getModel($name, $this->{$keyAttribute}, $this->{$key});
+            return $model;
         }
-        return $this->_model;
+        return parent::__get($name);
     }
 
     /**
-     * @param $model IDestinationModel
+     * @param string $name
+     * @param mixed $value
+     * @throws \yii\base\UnknownPropertyException
      */
-    public function setModel($model)
+    public function __set($name, $value)
     {
-        $this->_model = $model;
+        if (in_array(strtolower($name), ['downloadedcontent', 'marcno', 'marcinfo', 'marccopy'])) {
+            return $this->setModel($modelClass, $value);
+        }
+        return parent::__set($name, $value);
+    }
+
+    /**
+     * @param string $modelClass
+     * @param string $keyAttribute
+     * @param $key
+     * @return mixed
+     */
+    public function getModel(string $modelClass, string $keyAttribute, $key)
+    {
+        if ($this->{'_' . $modelClass} == null) {
+            $this->{'_' . $modelClass} = $this->findOrCreateOne($this->{$modelClass . 'Class'}, $keyAttribute, $key);
+        }
+        return $this->{'_' . $modelClass};
+    }
+
+    /**
+     * @param $model mixed
+     */
+    public function setModel($modelClass, $model)
+    {
+        $this->{'_' . $modelClass} = $model;
     }
 
     /**
      * @param string $class
      * @param string $keyAttribute
      * @param mixed $key
-     * @return IDestinationModel
+     * @return mixed
      */
-    protected function findOrCreateOne(string $class, string $keyAttribute, $key) : IDestinationModel
+    protected function findOrCreateOne(string $class, string $keyAttribute, $key)
     {
         if ($keyAttribute == NULL) {
             throw new InvalidArgumentException("Key attribute not specified.");
@@ -95,7 +186,6 @@ class Destination extends \rhoone\spider\destinations\Destination
             throw new InvalidArgumentException("Scalar value required, null given.");
         }
         $model = $class::find()->where([$keyAttribute => $key])->one();
-        /* @var $model IDestinationModel */
         if (!$model) {
             $model = new $class([$keyAttribute => $key]);
         }
@@ -109,7 +199,7 @@ class Destination extends \rhoone\spider\destinations\Destination
      */
     public function export(string $content)
     {
-        $this->model->setDownloadedContent($content);
-        return $this->model->save();
+        $this->downloadedContent->setDownloadedContent($content);
+        return $this->downloadedContent->save();
     }
 }
