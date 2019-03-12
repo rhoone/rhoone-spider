@@ -66,7 +66,17 @@ class BatchAnalyzeJob extends BaseObject implements RetryableJobInterface
      */
     public function execute($queue) : int
     {
-        $this->batchAnalyze();
+        list($usec, $sec) = explode(" ", microtime());
+        $start = ((float)$usec + (float)$sec);
+        try {
+            $this->batchAnalyze();
+        } catch (\Exception $ex) {
+            file_put_contents("php://stderr", $ex->getMessage() . "\n");
+        }
+        list($usec, $sec) = explode(" ", microtime());
+        $duration = ((float)$usec + (float)$sec) - $start;
+
+        file_put_contents("php://stdout", "result[$duration second(s) elapsed.]\n\n");
         return 0;
     }
 
