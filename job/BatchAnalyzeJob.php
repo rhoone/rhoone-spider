@@ -85,7 +85,7 @@ class BatchAnalyzeJob extends BaseObject implements RetryableJobInterface
      */
     public function getTtr() : int
     {
-        return $this->htmls < 3 ? 3 : count($this->htmls);
+        return $this->htmls < 5 ? 5 : count($this->htmls);
     }
 
     /**

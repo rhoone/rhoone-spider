@@ -228,7 +228,7 @@ class BatchDownloadJob extends BaseObject implements RetryableJobInterface
      */
     public function getTtr() : int
     {
-        return $this->getUrlsCount() < 3 ? 3 : $this->getUrlsCount();
+        return $this->getUrlsCount() < 10 ? 10 : $this->getUrlsCount();
     }
 
     /**
