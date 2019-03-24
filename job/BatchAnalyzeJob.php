@@ -21,8 +21,6 @@ use yii\queue\RetryableJobInterface;
  */
 class BatchAnalyzeJob extends BaseObject implements RetryableJobInterface
 {
-    use DestinationTrait;
-
     /**
      * @var int the attempts limit. not recommended to be greater than 5.
      */

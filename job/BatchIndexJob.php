@@ -21,8 +21,6 @@ use yii\queue\JobInterface;
  */
 class BatchIndexJob extends BaseObject implements JobInterface
 {
-    use DestinationTrait;
-
     /**
      * @param $model
      * @return int
