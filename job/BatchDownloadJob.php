@@ -14,7 +14,7 @@ namespace rhoone\spider\job;
 
 use rhoone\spider\destinations\Destination;
 use Yii;
-use yii\base\BaseObject;
+use yii\base\Component;
 use yii\base\InvalidConfigException;
 use yii\base\InvalidValueException;
 use yii\queue\Queue;
@@ -44,7 +44,7 @@ use yii\queue\RetryableJobInterface;
  * exported.
  * @package rhoone\spider\job
  */
-class BatchDownloadJob extends BaseObject implements RetryableJobInterface
+class BatchDownloadJob extends Component implements RetryableJobInterface
 {
     use DestinationTrait;
 

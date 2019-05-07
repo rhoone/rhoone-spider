@@ -12,14 +12,14 @@
 
 namespace rhoone\spider\job;
 
-use yii\base\BaseObject;
+use yii\base\Component;
 use yii\queue\JobInterface;
 
 /**
  * Class BatchIndexJob
  * @package rhoone\spider\job
  */
-class BatchIndexJob extends BaseObject implements JobInterface
+class BatchIndexJob extends Component implements JobInterface
 {
     /**
      * @param $model

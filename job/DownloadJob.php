@@ -13,7 +13,7 @@
 namespace rhoone\spider\job;
 
 use rhoone\spider\destinations\Destination;
-use yii\base\BaseObject;
+use yii\base\Component;
 use yii\di\Instance;
 use yii\queue\RetryableJobInterface;
 
@@ -28,7 +28,7 @@ use yii\queue\RetryableJobInterface;
  * exported.
  * @package rhoone\spider\job
  */
-class DownloadJob extends BaseObject implements RetryableJobInterface
+class DownloadJob extends Component implements RetryableJobInterface
 {
     /**
      * @var int the attempts limit. not recommended to be greater than 5.

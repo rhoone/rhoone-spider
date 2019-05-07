@@ -12,14 +12,14 @@
 
 namespace rhoone\spider\job;
 
-use yii\base\BaseObject;
+use yii\base\Component;
 use yii\queue\RetryableJobInterface;
 
 /**
  * Class BatchAnalyzeJob
  * @package rhoone\spider\job
  */
-class BatchAnalyzeJob extends BaseObject implements RetryableJobInterface
+class BatchAnalyzeJob extends Component implements RetryableJobInterface
 {
     /**
      * @var int the attempts limit. not recommended to be greater than 5.
